@@ -340,7 +340,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
   </div>
 </header>
 
-<main id="topo">
+<main id="topo" data-hm="topo">
 <!-- HERO -->
 <section class="hero">
   <div class="hero-img">
@@ -380,7 +380,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </section>
 
 <!-- MANIFESTO + NÚMEROS -->
-<section class="manifesto" id="bairro">
+<section class="manifesto" id="bairro" data-hm="bairro">
   <div class="wrap">
     <p id="manifesto">Um loteamento novo em Igrejinha, desenhado antes da primeira casa. Ruas de até 15&nbsp;metros, quadras organizadas e a <span class="ac">Serra a poucos&nbsp;minutos.</span> Você escolhe o lote agora e constrói no seu&nbsp;tempo.</p>
     <div class="numeros">
@@ -394,7 +394,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </section>
 
 <!-- INFRAESTRUTURA (cartões que empilham) -->
-<section class="infra" id="infra">
+<section class="infra" id="infra" data-hm="infra">
   <div class="wrap">
     <h2 data-up>Infraestrutura completa, entregue junto com o&nbsp;lote.</h2>
     <p class="txt" data-up>Você compra o terreno e só pensa no projeto da sua&nbsp;casa.</p>
@@ -434,7 +434,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </section>
 
 <!-- LOCALIZAÇÃO -->
-<section class="local" id="local">
+<section class="local" id="local" data-hm="local">
   <div class="local-img"><img src="assets/opt/natureza.jpg" alt="Loteamento cercado de mata no Vale do Paranhana" loading="lazy"></div>
   <div class="wrap">
     <h2 data-loc>Igrejinha, na porta de entrada da&nbsp;Serra.</h2>
@@ -448,7 +448,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </section>
 
 <!-- CONDIÇÕES -->
-<section class="cond" id="condicoes">
+<section class="cond" id="condicoes" data-hm="condicoes">
   <div class="wrap">
     <span class="eyebrow" data-up>Condições de&nbsp;pagamento</span>
     <h2 data-up>Facilidade para garantir o seu&nbsp;lote.</h2>
@@ -470,7 +470,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </section>
 
 <!-- FORMULÁRIO -->
-<section class="contato" id="contato">
+<section class="contato" id="contato" data-hm="contato">
   <div class="wrap grid">
     <div>
       <span class="eyebrow" data-up>Tabela de&nbsp;lotes</span>
@@ -519,7 +519,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </section>
 
 <!-- FAQ -->
-<section class="faq" id="faq">
+<section class="faq" id="faq" data-hm="faq">
   <div class="wrap">
     <h2 data-up>Perguntas&nbsp;frequentes</h2>
     <details><summary>Estou comprando lote ou casa?<i class="ph ph-plus"></i></summary><p>Lote. As casas que aparecem nas imagens são ilustrativas, só para você visualizar o loteamento pronto. Você compra o terreno e constrói o projeto que quiser, no seu&nbsp;tempo.</p></details>
@@ -892,6 +892,84 @@ if (temGsap) {
     if (document.hidden) { saiuEm = Date.now(); return; }
     if (mobile && saiuEm && Date.now() - saiuEm > 4000 && maxProg > .15) setTimeout(function(){ abrir("voltou_aba"); }, 700);
   });
+})();
+</script>
+<script>
+/* ---------- MAPA DE CALOR E FUNIL (Central Five) ---------- */
+(function(){
+  var Q = new URLSearchParams(location.search);
+  var FIVE_HM = /[?&]heatmap=/.test(location.search);
+  var secs = function(){ return [].slice.call(document.querySelectorAll("[data-hm]")); };
+  if (FIVE_HM) {
+    var st = document.createElement("style");
+    st.textContent = ".saida,.barra{display:none!important}*{animation:none!important;transition:none!important}";
+    document.head.appendChild(st);
+    var manda = function(){ var d = {}; secs().forEach(function(e){ var r = e.getBoundingClientRect(); d[e.dataset.hm] = [Math.round(r.top + scrollY), Math.round(r.height)]; });
+      parent.postMessage({ tipo: "five-heat-layout", docH: document.documentElement.scrollHeight, vw: innerWidth, secoes: d }, "*"); };
+    addEventListener("load", function(){ setTimeout(manda, 900); }); addEventListener("resize", function(){ setTimeout(manda, 300); });
+    if (document.fonts) document.fonts.ready.then(function(){ setTimeout(manda, 400); });
+    return;
+  }
+  if (navigator.webdriver && !Q.has("hm_test")) return;
+  if (!/^(loteamentonovoig\.bloque\.com\.br|alameda-serrana\.fivedigitalagencia\.workers\.dev|localhost)$/.test(location.hostname)) return;
+  var API = (Q.get("hm_api") || "").indexOf("http://localhost") === 0 ? Q.get("hm_api") : "https://radar-meta-five.pages.dev/api/heat/ingest";
+  var rnd = function(){ return Array.from(crypto.getRandomValues(new Uint32Array(4)), function(n){ return n.toString(36); }).join("").slice(0, 24).padEnd(14, "0"); };
+  var visitante = null, novo = 0;
+  try { visitante = localStorage.getItem("ig2_v"); if (!visitante) { visitante = rnd(); novo = 1; localStorage.setItem("ig2_v", visitante); } } catch (_) {}
+  var ref = (document.referrer && document.referrer.indexOf(location.host) < 0) ? new URL(document.referrer).hostname : "";
+  var us = (Q.get("utm_source") || "").toLowerCase(), um = (Q.get("utm_medium") || "").toLowerCase();
+  var origem = Q.get("gclid") || Q.get("gbraid") || Q.get("wbraid") ? "google-ads"
+    : Q.get("fbclid") && !us ? "meta"
+    : us ? (/(facebook|fb|instagram|ig|meta)/.test(us) ? (/(cpc|paid|pago|ads)/.test(um) || Q.get("fbclid") ? "meta-ads" : "meta") : /google/.test(us) ? (/(cpc|paid)/.test(um) ? "google-ads" : "google") : us)
+    : /google\./.test(ref) ? "google-organico" : /bing\.|duckduckgo|yahoo/.test(ref) ? "busca" : /(chatgpt|openai|perplexity|gemini|copilot|claude)/.test(ref) ? "ia"
+    : /(instagram|facebook|fb\.|l\.instagram)/.test(ref) ? "social" : ref ? "referencia" : "direto";
+  var S = { id: rnd(), visitante: visitante, novo: novo, inicio: Date.now(), disp: innerWidth < 768 ? "mobile" : "desktop", vw: innerWidth, vh: innerHeight,
+    docH: 0, origem: origem, campanha: Q.get("utm_campaign") || "", ref: ref, pagina: location.pathname, scroll: 0, ativo: 0,
+    passos: ["visita"], secoes: {}, saida: "", leads: 0, produtos: [], cliques: [] };
+  var passo = function(p){ if (S.passos.indexOf(p) < 0) S.passos.push(p); };
+  var atual = "", desde = performance.now(), ultimaAcao = Date.now();
+  var fecha = function(){ if (atual && !document.hidden) { var d = S.secoes[atual] || (S.secoes[atual] = { t: Math.round(performance.now()), ms: 0 }); d.ms += Math.round(performance.now() - desde); } desde = performance.now(); };
+  var io = new IntersectionObserver(function(es){ es.forEach(function(e){ if (!e.isIntersecting) return; fecha(); atual = e.target.dataset.hm;
+    if (!S.secoes[atual]) S.secoes[atual] = { t: Math.round(performance.now()), ms: 0 };
+    if (atual !== "topo") passo("rolou"); S.saida = atual; }); }, { rootMargin: "-50% 0px -50% 0px" });
+  secs().forEach(function(e){ io.observe(e); });
+  addEventListener("scroll", function(){ var h = document.documentElement.scrollHeight; S.docH = h; S.scroll = Math.max(S.scroll, Math.min(1, (scrollY + innerHeight) / h)); ultimaAcao = Date.now(); }, { passive: true });
+  setInterval(function(){ if (!document.hidden && Date.now() - ultimaAcao < 60000) S.ativo += 1000; }, 1000);
+  document.addEventListener("focusin", function(e){ if (e.target.closest && e.target.closest("[data-lead-form]")) passo("intencao"); });
+  var lidos = 0;
+  function leDataLayer(){
+    var dl = window.dataLayer || [];
+    for (; lidos < dl.length; lidos++) {
+      var ev = dl[lidos] && dl[lidos].event;
+      if (ev === "generate_lead") { passo("intencao"); passo("lead"); S.leads++; setTimeout(envia, 0); }
+    }
+  }
+  setInterval(leDataLayer, 1000);
+  addEventListener("click", function(e){
+    ultimaAcao = Date.now();
+    var alvo = e.target, ativo = alvo.closest("a,button,input,textarea,select,label,summary");
+    var sec = alvo.closest("[data-hm]");
+    var wa = alvo.closest("[data-wa]");
+    var k = wa ? "whats" : alvo.closest("form") ? "form" : ativo ? "outro" : "vazio";
+    if (ativo && !wa && !alvo.closest("form")) passo("interagiu");
+    if (wa || alvo.closest("form")) passo("intencao");
+    var rot = (ativo ? (ativo.getAttribute("aria-label") || ativo.innerText || ativo.tagName) : alvo.tagName.toLowerCase()).replace(/\s+/g, " ").trim().slice(0, 60);
+    if (S.cliques.length < 400) {
+      var ry = null;
+      if (sec) { var r = sec.getBoundingClientRect(); ry = r.height ? +((e.clientY - r.top) / r.height).toFixed(4) : 0; }
+      S.cliques.push({ n: S.cliques.length, s: sec ? sec.dataset.hm : "_fixo", ry: sec ? ry : +(e.clientY / innerHeight).toFixed(4),
+        dx: Math.round(e.clientX - innerWidth / 2), fx: +(e.clientX / innerWidth).toFixed(4), el: rot, k: k, i: ativo ? 1 : 0 });
+    }
+  }, true);
+  var ultimoEnvio = "";
+  function envia(){
+    leDataLayer(); fecha(); S.docH = S.docH || document.documentElement.scrollHeight;
+    var corpo = JSON.stringify(S); if (corpo === ultimoEnvio) return; ultimoEnvio = corpo;
+    try { navigator.sendBeacon(API, new Blob([corpo], { type: "text/plain" })); } catch (_) {}
+  }
+  document.addEventListener("visibilitychange", function(){ if (document.hidden) envia(); else desde = performance.now(); });
+  addEventListener("pagehide", envia);
+  setInterval(function(){ if (!document.hidden && S.ativo >= 3000) envia(); }, 20000);
 })();
 </script>
 </body>
